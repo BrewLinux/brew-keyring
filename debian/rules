@@ -1,0 +1,77 @@
+#!/usr/bin/make -f
+# debian/rules file - for debian/keyring
+# Based on sample debian/rules file - for GNU Hello (1.3).
+# Copyright 1994,1995 by Ian Jackson.
+# Copyright 1998-2003 James Troup
+# I hereby give you perpetual unlimited permission to copy,
+# modify and relicense this file, provided that you do not remove
+# my name from the file itself.  (I assert my moral right of
+# paternity under the Copyright, Designs and Patents Act 1988.)
+# This file may have to be extensively modified
+
+install_dir=install -d -m 755
+install_file=install -m 644
+install_script=install -m 755
+install_binary=install -m 755 -s
+
+VERSION := $(shell dpkg-parsechangelog | grep ^Version: | cut -d' ' -f2)
+
+build: build-arch build-indep
+build-arch: build-stamp
+build-indep: build-stamp
+build-stamp:
+
+clean:
+	$(checkdir)
+	rm -f *.bak *~ */*~ debian/files* debian/*substvars
+	rm -rf debian/tmp debian/brew-keyring-udeb
+
+binary-indep: checkroot
+	test -f keyrings/brew-keyring.gpg
+	test -f keyrings/brew-removed-keys.gpg
+
+	rm -rf debian/tmp
+	$(install_dir) debian/tmp/DEBIAN/
+	$(install_script) debian/postinst debian/tmp/DEBIAN/
+
+	$(install_dir) debian/tmp/usr/share/keyrings/
+	$(install_file) keyrings/brew-keyring.gpg debian/tmp/usr/share/keyrings/
+	$(install_file) keyrings/brew-removed-keys.gpg debian/tmp/usr/share/keyrings/
+
+	$(install_dir) debian/tmp/usr/share/doc/brew-keyring/
+	$(install_file) README.md debian/tmp/usr/share/doc/brew-keyring/
+	$(install_file) debian/changelog debian/tmp/usr/share/doc/brew-keyring/changelog
+	gzip -9v debian/tmp/usr/share/doc/brew-keyring/*
+	$(install_file) debian/copyright debian/tmp/usr/share/doc/brew-keyring/
+
+	dpkg-gencontrol -pbrew-keyring -isp
+	chown -R root.root debian/tmp
+	chmod -R go=rX debian/tmp
+	dpkg --build debian/tmp ..
+
+	rm -rf debian/brew-keyring-udeb
+	$(install_dir) debian/brew-keyring-udeb/DEBIAN/
+
+	$(install_dir) debian/brew-keyring-udeb/usr/share/keyrings/
+	$(install_file) keyrings/brew-keyring.gpg debian/brew-keyring-udeb/usr/share/keyrings/
+	$(install_file) keyrings/brew-removed-keys.gpg debian/brew-keyring-udeb/usr/share/keyrings/
+
+	# Don't let dpkg-gencontrol write incorrect guesses to debian/files.
+	# Instead, register the udeb manually.
+	dpkg-gencontrol -pbrew-keyring-udeb -Tdebian/brew-keyring-udeb.substvars -Pdebian/brew-keyring-udeb -isp -fdebian/files~
+	dpkg-distaddfile brew-keyring-udeb_$(VERSION)_all.udeb debian-installer optional
+	chown -R root.root debian/brew-keyring-udeb
+	chmod -R go=rX debian/brew-keyring-udeb
+	dpkg --build debian/brew-keyring-udeb ../brew-keyring-udeb_$(VERSION)_all.udeb
+
+binary-arch:
+
+# Below here is fairly generic really
+
+binary:		binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test root = "`whoami`"
+
+.PHONY: build build-arch build-indep binary binary-arch binary-indep clean checkroot

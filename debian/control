@@ -1,0 +1,23 @@
+Source: brew-keyring
+Section: misc
+Priority: optional
+Maintainer: c00clupea <c00clupea@gmail.com>
+Uploaders: c00clupea <c00clupea@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: <insert the upstream URL, if relevant>
+Vcs-Git: https://github.com/BrewLinux/brew-keyring.git
+Vcs-Browser: https://github.com/BrewLinux/brew-keyring.git
+
+Package: brew-keyring
+Architecture: all
+Depends: gnupg, apt
+Description: gpg archive keys
+ We sign our files...these are the keys
+
+Package: brew-keyring-udeb
+Architecture: all
+Section: debian-installer
+Recommends: gpgv-udeb
+Description: gpg archive keys
+ We sign our files...these are the keys
