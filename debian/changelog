@@ -1,3 +1,9 @@
+brew-keyring (1.0.1) unstable; urgency=medium
+
+  * +working keyring
+
+	-- c00clupea <c00clupea@gmail.com>  Mon, 11 Jan 2016 16:42:48 +0100
+
 brew-keyring (1.0.0) unstable; urgency=low
 
   * Initial Release.
